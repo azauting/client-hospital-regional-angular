@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr'; // <--- Importar Toastr
 
 import {
     TicketService,
-    TicketCreatePayload,
     Ubicacion
 } from '../../../core/services/ticket/ticket.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
+
 @Component({
     selector: 'app-crear-ticket',
     standalone: true,
@@ -17,12 +18,17 @@ import { AuthService } from '../../../core/services/auth/auth.service';
     templateUrl: './crear-ticket.html',
 })
 export class CrearTicketComponent implements OnInit {
+    
+    // Inyecciones
     private ticketService = inject(TicketService);
     private router = inject(Router);
-    public authService = inject(AuthService);
+    private authService = inject(AuthService);
+    private toastr = inject(ToastrService); // <--- Inyección
 
+    // Datos del usuario
     rol = '';
-    // campos del formulario
+    
+    // Campos del formulario
     asunto = '';
     descripcion = '';
     telefono = '';
@@ -30,59 +36,47 @@ export class CrearTicketComponent implements OnInit {
     evento_id: number | null = null;
     ubicacion_id: number | null = null;
 
-    // signals
+    // Signals
     ubicaciones = signal<Ubicacion[]>([]);
     loading = signal<boolean>(false);
     loadingUbicaciones = signal<boolean>(false);
-    errorMsg = signal<string>('');
-    successMsg = signal<string>('');
 
     ngOnInit() {
         const user = this.authService.getUser();
-        this.rol = user?.nombre_rol ?? '';
+        this.rol = user?.nombre_rol?.toLowerCase() ?? '';
+        this.autor_problema = user?.nombre_completo ?? ''; // Prellenar nombre
         this.cargarUbicaciones();
     }
 
     cargarUbicaciones() {
-        // Solo cargar si no estamos ya cargando y no tenemos datos
-        if (this.loadingUbicaciones() || this.ubicaciones().length > 0) {
-            return;
-        }
+        if (this.loadingUbicaciones() || this.ubicaciones().length > 0) return;
 
         this.loadingUbicaciones.set(true);
-        this.errorMsg.set('');
 
         this.ticketService.getUbicaciones()
             .pipe(finalize(() => this.loadingUbicaciones.set(false)))
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
-                        const ubicacionesData = resp.data?.ubicaciones ?? [];
-                        this.ubicaciones.set(ubicacionesData);
-
-                        if (ubicacionesData.length === 0) {
-                            this.errorMsg.set('No hay ubicaciones disponibles. Contacta al administrador.');
+                        const data = resp.data?.ubicaciones ?? [];
+                        this.ubicaciones.set(data);
+                        if (data.length === 0) {
+                            this.toastr.warning('No hay ubicaciones configuradas en el sistema.', 'Aviso');
                         }
                     } else {
-                        this.errorMsg.set(resp?.message || 'No se pudieron obtener las ubicaciones');
+                        this.toastr.error('No se pudieron cargar las ubicaciones', 'Error');
                     }
                 },
-                error: (error) => {
-                    console.error('Error loading locations:', error);
-                    this.errorMsg.set('Error al cargar las ubicaciones. Por favor, intenta más tarde.');
+                error: () => {
+                    this.toastr.error('Error de conexión al cargar ubicaciones', 'Error de Red');
                 }
             });
     }
 
     onSubmit() {
-        if (!this.validarFormulario()) {
-            return;
-        }
+        if (!this.validarFormulario()) return;
 
-        this.errorMsg.set('');
-        this.successMsg.set('');
-
-        // Base del payload (todos los roles)
+        // Payload base
         const payload: any = {
             asunto: this.asunto.trim(),
             descripcion: this.descripcion.trim(),
@@ -91,10 +85,10 @@ export class CrearTicketComponent implements OnInit {
             ubicacion_id: this.ubicacion_id!,
         };
 
-        // Si es SOPORTE o ADMINISTRADOR → debe enviar evento_id
+        // Payload extra para Staff
         if (this.rol === 'soporte' || this.rol === 'administrador') {
             if (!this.evento_id) {
-                this.errorMsg.set('Debes seleccionar un evento para este ticket');
+                this.toastr.warning('Debes clasificar el tipo de evento', 'Faltan datos');
                 return;
             }
             payload.evento_id = this.evento_id;
@@ -107,123 +101,63 @@ export class CrearTicketComponent implements OnInit {
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
-                        this.successMsg.set(resp.message || '¡Ticket creado correctamente!');
-                        this.limpiarFormulario();
-
+                        // ÉXITO
+                        this.toastr.success('Ticket creado correctamente', '¡Enviado!');
+                        
+                        // Esperar 1.5s para que el usuario vea el mensaje y redirigir
                         setTimeout(() => {
-                            if (this.rol === 'solicitante') {
-                                this.router.navigate(['/solicitante/mis-tickets']);
-                            } else if (this.rol === 'soporte') {
-                                this.router.navigate(['/soporte']);
-                            } else {
-                                this.router.navigate(['/admin']);
-                            }
+                            this.navegarSegunRol();
                         }, 1500);
+                        
                     } else {
-                        this.errorMsg.set(resp?.message || 'Error al crear el ticket');
+                        this.toastr.error(resp?.message || 'No se pudo crear el ticket', 'Error');
                     }
                 },
                 error: (error) => {
-                    console.error('Error creating ticket:', error);
-                    this.errorMsg.set(this.obtenerMensajeError(error));
+                    console.error(error);
+                    const msg = error.status === 0 ? 'Sin conexión al servidor' : 'Error interno del servidor';
+                    this.toastr.error(msg, 'Error');
                 }
             });
     }
 
-
     private validarFormulario(): boolean {
         if (!this.asunto.trim()) {
-            this.errorMsg.set('El asunto es requerido');
+            this.toastr.warning('El asunto es obligatorio', 'Atención');
             return false;
         }
-
         if (!this.descripcion.trim()) {
-            this.errorMsg.set('La descripción es requerida');
+            this.toastr.warning('La descripción es obligatoria', 'Atención');
             return false;
         }
-
-        if (!this.telefono.trim()) {
-            this.errorMsg.set('El teléfono es requerido');
-            return false;
-        }
-
-        if (!this.autor_problema.trim()) {
-            this.errorMsg.set('El nombre de quien reporta es requerido');
-            return false;
-        }
-
         if (!this.ubicacion_id) {
-            this.errorMsg.set('Debes seleccionar una ubicación');
+            this.toastr.warning('Selecciona una ubicación', 'Atención');
             return false;
         }
-
-        if (this.ubicaciones().length === 0) {
-            this.errorMsg.set('No hay ubicaciones disponibles. No se puede crear el ticket.');
+        if (!this.telefono.trim()) {
+            this.toastr.warning('Indica un teléfono de contacto', 'Atención');
             return false;
         }
-
-        // Validaciones de longitud
-        if (this.asunto.trim().length < 5) {
-            this.errorMsg.set('El asunto debe tener al menos 5 caracteres');
+        if (!this.autor_problema.trim()) {
+            this.toastr.warning('Indica quién reporta el problema', 'Atención');
             return false;
         }
-
-        if (this.descripcion.trim().length < 10) {
-            this.errorMsg.set('La descripción debe tener al menos 10 caracteres');
-            return false;
-        }
-
-        if (this.autor_problema.trim().length < 3) {
-            this.errorMsg.set('El nombre debe tener al menos 3 caracteres');
-            return false;
-        }
-
         return true;
     }
 
-    private limpiarFormulario(): void {
-        this.asunto = '';
-        this.descripcion = '';
-        this.telefono = '';
-        this.autor_problema = '';
-        this.ubicacion_id = null;
+    // Navegación inmediata (botón Cancelar)
+    cancelar() {
+        this.navegarSegunRol();
     }
 
-    private obtenerMensajeError(error: any): string {
-        if (error.status === 0) {
-            return 'Error de conexión. Verifica tu conexión a internet.';
-        } else if (error.status === 400) {
-            return 'Datos inválidos. Por favor, verifica la información ingresada.';
-        } else if (error.status === 401) {
-            return 'Sesión expirada. Por favor, inicia sesión nuevamente.';
-        } else if (error.status === 500) {
-            return 'Error del servidor. Por favor, intenta más tarde.';
+    // Lógica centralizada de redirección
+    private navegarSegunRol() {
+        if (this.rol === 'administrador') {
+            this.router.navigate(['/admin/tickets/sin-revisar']);
+        } else if (this.rol === 'soporte') {
+            this.router.navigate(['/soporte']);
+        } else {
+            this.router.navigate(['/inicio/mis-tickets']);
         }
-
-        return 'Error al crear el ticket. Por favor, intenta nuevamente.';
-    }
-
-    volver(): void {
-        this.router.navigate(['/solicitante/mis-tickets']);
-    }
-
-    // Método para recargar ubicaciones
-    recargarUbicaciones(): void {
-        this.ubicaciones.set([]); // Limpiar ubicaciones existentes
-        this.cargarUbicaciones();
-    }
-
-    // Getters para el template
-    get hayUbicaciones(): boolean {
-        return this.ubicaciones().length > 0;
-    }
-
-    get formularioValido(): boolean {
-        return !!this.asunto.trim() &&
-            !!this.descripcion.trim() &&
-            !!this.telefono.trim() &&
-            !!this.autor_problema.trim() &&
-            !!this.ubicacion_id &&
-            this.hayUbicaciones;
     }
 }
