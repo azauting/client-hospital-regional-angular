@@ -7,9 +7,10 @@ import { MisTicketsComponent } from './features/solicitante/pages/mis-tickets/mi
 import { AdminDashboardComponent } from './features/admin/pages/dashboard/dashboard';
 import { AdminTicketsSinRevisarComponent } from './features/admin/pages/tickets-sin-revisar/tickets-sin-revisar';
 import { AdminTicketRevisarComponent } from './features/admin/pages/ticket-revisar/ticket-revisar';
-import { AdminUsuariosComponent } from './features/admin/pages/usuarios/usuarios';
+import { UsuariosSolicitantesComponent } from './features/admin/pages/usuarios-solicitantes/usuarios-solicitantes';
 import { TicketsAsignadosPorSoporteComponent } from './features/soporte/pages/tickets-asignados-por-soporte/tickets-asignados-por-soporte';
-
+import { UsuariosSoportesComponent } from './features/admin/pages/usuarios-soportes/usuarios-soportes';
+import { UbicacionesComponent } from './features/admin/pages/ubicaciones/ubicaciones';
 // layouts
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { SoporteLayoutComponent } from './layouts/soporte-layout/soporte-layout.component';
@@ -63,7 +64,9 @@ export const routes: Routes = [
             { path: 'tickets/revisados', component: TicketsRevisadosComponent },
             { path: 'ticket/:id', component: TicketDetalleStaffComponent },
             { path: 'crear-ticket', component: CrearTicketComponent },
-            { path: 'usuarios', component: AdminUsuariosComponent },
+            { path: 'solicitantes', component: UsuariosSolicitantesComponent },
+            { path: 'soportes', component: UsuariosSoportesComponent },
+            { path: 'ubicaciones', component: UbicacionesComponent },
         ]
     },
 ];

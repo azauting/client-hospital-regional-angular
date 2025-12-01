@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 // ===== TIPOS =====
@@ -57,9 +57,11 @@ export interface TreemapResponse {
 })
 export class DashboardService {
 
-    private apiUrl = 'https://api-hcm-tickets-production.up.railway.app';
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        @Inject('API_URL') private apiUrl: string
+    ) { }
 
     // ===== KPI NUMÉRICOS =====
 

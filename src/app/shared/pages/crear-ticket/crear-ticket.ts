@@ -18,7 +18,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
     templateUrl: './crear-ticket.html',
 })
 export class CrearTicketComponent implements OnInit {
-    
+
     // Inyecciones
     private ticketService = inject(TicketService);
     private router = inject(Router);
@@ -27,7 +27,7 @@ export class CrearTicketComponent implements OnInit {
 
     // Datos del usuario
     rol = '';
-    
+
     // Campos del formulario
     asunto = '';
     descripcion = '';
@@ -35,6 +35,7 @@ export class CrearTicketComponent implements OnInit {
     autor_problema = '';
     evento_id: number | null = null;
     ubicacion_id: number | null = null;
+    ip_manual = '';
 
     // Signals
     ubicaciones = signal<Ubicacion[]>([]);
@@ -58,8 +59,9 @@ export class CrearTicketComponent implements OnInit {
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
-                        const data = resp.data?.ubicaciones ?? [];
+                        const data = resp.data?.tipos_ubicacion?.ubicaciones ?? [];
                         this.ubicaciones.set(data);
+
                         if (data.length === 0) {
                             this.toastr.warning('No hay ubicaciones configuradas en el sistema.', 'Aviso');
                         }
@@ -82,6 +84,7 @@ export class CrearTicketComponent implements OnInit {
             descripcion: this.descripcion.trim(),
             telefono: this.telefono.trim(),
             autor_problema: this.autor_problema.trim(),
+            ip_manual: this.ip_manual.trim(),
             ubicacion_id: this.ubicacion_id!,
         };
 
@@ -103,12 +106,12 @@ export class CrearTicketComponent implements OnInit {
                     if (resp?.success) {
                         // ÉXITO
                         this.toastr.success('Ticket creado correctamente', '¡Enviado!');
-                        
+
                         // Esperar 1.5s para que el usuario vea el mensaje y redirigir
                         setTimeout(() => {
                             this.navegarSegunRol();
                         }, 1500);
-                        
+
                     } else {
                         this.toastr.error(resp?.message || 'No se pudo crear el ticket', 'Error');
                     }
@@ -140,6 +143,10 @@ export class CrearTicketComponent implements OnInit {
         }
         if (!this.autor_problema.trim()) {
             this.toastr.warning('Indica quién reporta el problema', 'Atención');
+            return false;
+        }
+        if (!this.ip_manual.trim()) {
+            this.toastr.warning('La IP es obligatoria', 'Atención');
             return false;
         }
         return true;

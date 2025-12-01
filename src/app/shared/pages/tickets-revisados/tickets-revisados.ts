@@ -21,11 +21,6 @@ export class TicketsRevisadosComponent implements OnInit {
   loading = signal(false);
   errorMsg = signal('');
 
-  // PAGINACIÓN
-  currentPage = 1;
-  itemsPerPage = 10; // Subido a 10 por defecto, se ve mejor en tablas completas
-  totalTickets = 0;
-
   // FILTROS
   filtroBusqueda: string = '';
   filtroPrioridad: string = 'todos';
@@ -43,14 +38,34 @@ export class TicketsRevisadosComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.usuario = this.authService.getUser();
+    this.cargarUsuario(); // Separé la lógica para reutilizarla
     this.cargarTickets();
+  }
+
+  // =========================================================
+  // CARGA DE USUARIO (CORREGIDA)
+  // =========================================================
+  cargarUsuario() {
+    const rawUser = this.authService.getUser();
+
+    // Verificamos si el usuario viene anidado en 'data.user' (como muestra tu JSON)
+    if (rawUser && rawUser.data && rawUser.data.user) {
+        this.usuario = rawUser.data.user;
+    } else {
+        // Fallback: por si acaso ya viniera "plano"
+        this.usuario = rawUser;
+    }
+    
+    console.log('Usuario cargado:', this.usuario); // Para depurar que "unidad" esté en la raíz del objeto
   }
 
   get fechaActual(): Date {
     return new Date();
   }
 
+  // =========================================================
+  // CARGA DE TICKETS
+  // =========================================================
   cargarTickets() {
     this.loading.set(true);
     this.errorMsg.set('');
@@ -61,11 +76,11 @@ export class TicketsRevisadosComponent implements OnInit {
         next: (resp: any) => {
           if (resp?.success) {
             const ticketsData = resp.data?.tickets || [];
-            // Ordenar por fecha descendente (más nuevo arriba) por defecto
-            ticketsData.sort((a: any, b: any) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
+            
+            // Ordenar por fecha ASCENDENTE (Más antiguo primero)
+            ticketsData.sort((a: any, b: any) => new Date(a.fecha_creacion).getTime() - new Date(b.fecha_creacion).getTime());
 
             this.tickets.set(ticketsData);
-            this.totalTickets = ticketsData.length;
           } else {
             this.errorMsg.set(resp?.message || 'No se pudieron obtener los tickets');
           }
@@ -75,8 +90,20 @@ export class TicketsRevisadosComponent implements OnInit {
         },
       });
   }
+
   verDetalle(ticket_id: number): void {
-    this.ngOnInit();
+    // 1. REVALIDACIÓN DE SEGURIDAD
+    if (!this.usuario) {
+      this.cargarUsuario();
+    }
+
+    // 2. COMPROBACIÓN FINAL
+    if (!this.usuario || !this.usuario.nombre_rol) {
+      console.error('Error: No se pudo identificar el rol del usuario.', this.usuario);
+      return;
+    }
+
+    // 3. NAVEGACIÓN SEGURA
     if (this.usuario.nombre_rol === 'administrador') {
       this.router.navigate(['/admin/ticket', ticket_id]);
     } else {
@@ -84,15 +111,13 @@ export class TicketsRevisadosComponent implements OnInit {
     }
   }
 
-
   // =========================================================
-  // LÓGICA DE FILTRADO
+  // LÓGICA DE FILTRADO GENERAL
   // =========================================================
   getFilteredTickets() {
     const search = this.filtroBusqueda.toLowerCase().trim();
 
     return this.tickets().filter(t => {
-
       // 1. Búsqueda
       const matchSearch =
         !search ||
@@ -112,22 +137,28 @@ export class TicketsRevisadosComponent implements OnInit {
 
       // 4. Fechas
       const fecha = new Date(t.fecha_creacion);
-
-      const matchFechaDesde =
-        !this.filtroFechaDesde ||
-        fecha >= new Date(this.filtroFechaDesde);
-
-      const matchFechaHasta =
-        !this.filtroFechaHasta ||
-        fecha <= new Date(this.filtroFechaHasta + 'T23:59:59');
+      const matchFechaDesde = !this.filtroFechaDesde || fecha >= new Date(this.filtroFechaDesde);
+      const matchFechaHasta = !this.filtroFechaHasta || fecha <= new Date(this.filtroFechaHasta + 'T23:59:59');
 
       return matchSearch && matchPrioridad && matchEstado && matchFechaDesde && matchFechaHasta;
     });
   }
 
+  // =========================================================
+  // FILTRO PARA KANBAN
+  // =========================================================
+  getTicketsByPriority(prioridadColumna: string) {
+    const ticketsFiltrados = this.getFilteredTickets();
+    return ticketsFiltrados.filter(t => t.prioridad.toLowerCase() === prioridadColumna.toLowerCase());
+  }
+
   get nombreUnidad(): string {
-    if (!this.usuario) return 'Mi Unidad';
-    return this.usuario.nombre_unidad || this.usuario.unidad || 'Unidad Central';
+    // Como ya "desempaquetamos" el usuario en cargarUsuario(), ahora sí podemos acceder directo
+    if (!this.usuario) return 'Cargando...';
+    
+    // Tu JSON dice "unidad", pero a veces puede ser "nombre_unidad", dejamos ambos por seguridad
+    const u = this.usuario.nombre_unidad || this.usuario.unidad || 'Unidad Central';
+    return u.charAt(0).toUpperCase() + u.slice(1); // Capitalizar primera letra
   }
 
   resetFiltros() {
@@ -136,95 +167,5 @@ export class TicketsRevisadosComponent implements OnInit {
     this.filtroEstado = 'todos';
     this.filtroFechaDesde = '';
     this.filtroFechaHasta = '';
-    this.currentPage = 1;
-  }
-
-  // =========================================================
-  // PAGINACIÓN
-  // =========================================================
-
-  get totalPages(): number {
-    return Math.ceil(this.totalTickets / this.itemsPerPage) || 1;
-  }
-
-  getPaginatedTickets() {
-    const filtered = this.getFilteredTickets();
-    this.totalTickets = filtered.length;
-
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return filtered.slice(start, start + this.itemsPerPage);
-  }
-
-  getStartIndex(): number {
-    return (this.currentPage - 1) * this.itemsPerPage;
-  }
-
-  getEndIndex(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.totalTickets);
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) this.currentPage--;
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) this.currentPage++;
-  }
-
-  goToPage(page: number): void {
-    if (page !== -1 && page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const total = this.totalPages;
-    const current = this.currentPage;
-
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) pages.push(i);
-    } else {
-      if (current <= 4) {
-        pages.push(1, 2, 3, 4, 5, -1, total);
-      } else if (current >= total - 3) {
-        pages.push(1, -1, total - 4, total - 3, total - 2, total - 1, total);
-      } else {
-        pages.push(1, -1, current - 1, current, current + 1, -1, total);
-      }
-    }
-    return pages;
-  }
-
-  onItemsPerPageChange(event: any): void {
-    this.itemsPerPage = parseInt(event.target.value, 10);
-    this.currentPage = 1;
-  }
-
-  // =========================================================
-  // ESTILOS (BADGES)
-  // =========================================================
-
-  getPriorityClass(prioridad: string) {
-    if (!prioridad) return 'bg-slate-100 text-slate-600 border-slate-200';
-    const p = prioridad.toLowerCase();
-
-    if (p === 'alta') return 'bg-red-50 text-red-700 border-red-200';
-    if (p === 'media') return 'bg-amber-50 text-amber-700 border-amber-200';
-    if (p === 'baja') return 'bg-green-50 text-green-700 border-green-200';
-
-    return 'bg-slate-100 text-slate-600 border-slate-200';
-  }
-
-  getStatusClass(estado: string) {
-    if (!estado) return 'bg-slate-100 text-slate-600 border-slate-200';
-    const e = estado.toLowerCase();
-
-    if (e === 'abierto') return 'bg-blue-50 text-blue-700 border-blue-200';
-    if (e === 'en proceso') return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-    if (e === 'cerrado') return 'bg-green-100 text-green-600 border-green-200';
-    if (e === 'cancelado') return 'bg-red-50 text-red-700 border-red-200';
-
-    return 'bg-slate-100 text-slate-600 border-slate-200';
   }
 }

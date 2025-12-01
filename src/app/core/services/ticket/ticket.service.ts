@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 export interface TicketCreatePayload {
@@ -8,12 +8,14 @@ export interface TicketCreatePayload {
     autor_problema: string;
     evento?: string;
     ubicacion_id: number;
+    ip_manual: string;
 }
 
 export interface Ubicacion {
     ubicacion_id: number;
     ubicacion: string;
     area_id?: number | null;
+    nombre_area?: string | null;
 }
 
 export interface TicketResumen {
@@ -30,6 +32,8 @@ export interface Ticket {
     telefono: string;
     autor_problema: string;
     ubicacion: Ubicacion;
+    prioridad: string;
+    unidad: string;
     estado: string;
     evento?: string;
     fecha_creacion: string;
@@ -40,9 +44,10 @@ export interface Ticket {
     providedIn: 'root',
 })
 export class TicketService {
-    private apiUrl = 'https://api-hcm-tickets-production.up.railway.app';
-
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        @Inject('API_URL') private apiUrl: string
+    ) { }
 
     crearTicket(payload: TicketCreatePayload) {
         return this.http.post(
@@ -56,7 +61,7 @@ export class TicketService {
 
     getUbicaciones() {
         return this.http.get(
-            `${this.apiUrl}/api/tickets/ubicacion`,
+            `${this.apiUrl}/api/tipos/ubicacion`,
             {
                 withCredentials: true,
             }
@@ -105,7 +110,7 @@ export class TicketService {
 
     updateTicket(
         id: number,
-        data: { unidad_id?: number; prioridad_id?: number; estado_id?: number }
+        data: { unidad_id?: number; prioridad_id?: number; }
     ) {
         return this.http.patch(
             `${this.apiUrl}/api/tickets/${id}`,
@@ -156,7 +161,7 @@ export class TicketService {
         return this.http.patch(
             `${this.apiUrl}/api/tickets/${ticketId}/close`,
             {
-                respuesta_final: respuestaFinal   // 👈 ESTA ES LA CLAVE CORRECTA
+                respuesta_final: respuestaFinal  
             },
             { withCredentials: true }
         );

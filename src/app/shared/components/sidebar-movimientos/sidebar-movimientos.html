@@ -1,58 +1,97 @@
-<aside class="w-72 bg-[#001b55] text-white flex flex-col h-full border-l border-white/5 shadow-2xl">
+<aside [class.w-72]="isOpen()" [class.w-14]="!isOpen()"
+    class="bg-[#001b55] text-white flex flex-col h-full border-l border-white/5 shadow-2xl transition-all duration-300 ease-in-out relative overflow-hidden">
 
-    <header class="px-5 py-4 border-b border-white/10 bg-[#002777]/50 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10">
-        <div>
-            <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+    <header
+        class="px-3 py-4 border-b border-white/10 bg-[#002777]/50 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10 h-[60px]">
+
+        <div class="flex-1 overflow-hidden transition-opacity duration-200" [class.opacity-0]="!isOpen()"
+            [class.hidden]="!isOpen()">
+            <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-2 whitespace-nowrap">
                 <svg class="w-4 h-4 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Actividad Reciente
+                Actividad
             </h3>
-            <p class="text-[10px] text-slate-400 mt-0.5" *ngIf="!loading()">
-                Monitoreando tickets en tiempo real
-            </p>
-            <p class="text-[10px] text-[#62CEEA] mt-0.5 animate-pulse" *ngIf="loading()">
-                Actualizando datos...
-            </p>
+
+            @if (!loading()) {
+            <p class="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap truncate">Monitoreando tickets</p>
+            }
+            @if (loading()) {
+            <p class="text-[10px] text-[#62CEEA] mt-0.5 animate-pulse whitespace-nowrap">Actualizando...</p>
+            }
         </div>
 
-        <div class="relative flex h-2.5 w-2.5" title="Sistema en línea">
-            <span *ngIf="!errorMsg()" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span [ngClass]="errorMsg() ? 'bg-red-500' : 'bg-emerald-500'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-        </div>
+        <button (click)="toggleSidebar()"
+            class="p-1.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-colors focus:outline-none"
+            [title]="isOpen() ? 'Ocultar panel' : 'Mostrar panel'">
+
+            <svg [class.rotate-180]="!isOpen()" class="w-5 h-5 transition-transform duration-300" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+        </button>
     </header>
 
-    <div *ngIf="errorMsg()" class="px-4 py-3 bg-red-900/20 border-b border-red-500/20">
+    @if (!isOpen()) {
+    <div class="absolute top-[70px] left-0 w-full flex flex-col items-center gap-4 py-4 animate-fade-in">
+        <div class="relative flex h-3 w-3" title="Estado del sistema">
+            @if (!errorMsg()) {
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            }
+            <span [ngClass]="errorMsg() ? 'bg-red-500' : 'bg-emerald-500'"
+                class="relative inline-flex rounded-full h-3 w-3"></span>
+        </div>
+
+        @if (errorMsg()) {
+        <svg class="w-5 h-5 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        }
+    </div>
+    }
+
+    @if (isOpen() && errorMsg()) {
+    <div class="px-4 py-3 bg-red-900/20 border-b border-red-500/20 animate-fade-in">
         <div class="flex items-start gap-2">
-            <svg class="w-4 h-4 text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <p class="text-[10px] text-red-200 leading-tight">{{ errorMsg() }}</p>
         </div>
     </div>
+    }
 
-    <section class="flex-1 overflow-y-auto custom-scrollbar p-4">
-        
-        <div *ngIf="movimientos().length === 0 && !loading() && !errorMsg()" 
-             class="flex flex-col items-center justify-center h-32 text-center opacity-50">
+    <section class="flex-1 overflow-y-auto custom-scrollbar p-4 transition-opacity duration-200"
+        [class.opacity-0]="!isOpen()" [class.invisible]="!isOpen()">
+
+        @if (movimientos().length === 0 && !loading() && !errorMsg()) {
+        <div class="flex flex-col items-center justify-center h-32 text-center opacity-50">
             <svg class="w-8 h-8 text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
             </svg>
             <p class="text-xs text-slate-400">Sin actividad reciente</p>
         </div>
+        }
 
         <div class="space-y-6 relative border-l-2 border-white/10 ml-2.5">
-            
-            <article *ngFor="let m of movimientos()" class="relative pl-6 group">
-                
-                <button (click)="cerrarTarjeta(m.ticket_movimiento_id)" 
-                    class="absolute top-0 right-0 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+
+            @for (m of movimientos(); track m.ticket_movimiento_id) {
+            <article class="relative pl-6 group animate-slide-in">
+
+                <button (click)="cerrarTarjeta(m.ticket_movimiento_id)"
+                    class="absolute top-0 right-0 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 cursor-pointer z-10">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                <div class="absolute -left-[9px] top-0 bg-[#001b55] p-1 rounded-full border border-slate-600 group-hover:border-[#62CEEA] transition-colors">
+                <div
+                    class="absolute -left-[9px] top-0 bg-[#001b55] p-1 rounded-full border border-slate-600 group-hover:border-[#62CEEA] transition-colors">
                     <div [innerHTML]="getIconForType(m.tipo_movimiento)" class="w-3 h-3 text-[#62CEEA]"></div>
                 </div>
 
@@ -61,24 +100,26 @@
                         <span class="bg-white/10 px-1.5 py-0.5 rounded text-[10px] font-mono text-[#62CEEA]">
                             #{{ m.ticket_id }}
                         </span>
-                        <span class="text-xs font-bold text-white truncate max-w-[140px]">
+                        <span class="text-xs font-bold text-white truncate max-w-[140px]"
+                            [title]="formatoTipoMovimiento(m.tipo_movimiento)">
                             {{ formatoTipoMovimiento(m.tipo_movimiento) }}
                         </span>
                     </div>
 
-                    <p class="text-[11px] text-slate-300">
+                    <p class="text-[11px] text-slate-300 truncate">
                         <span class="text-slate-500">Por:</span> {{ m.nombre_completo }}
                     </p>
 
                     <p class="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {{ m.fecha | date:'shortTime' }} · {{ m.fecha | date:'dd/MM' }}
                     </p>
                 </div>
             </article>
-
+            }
         </div>
     </section>
 </aside>

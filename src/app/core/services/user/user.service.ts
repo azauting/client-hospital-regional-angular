@@ -1,10 +1,11 @@
-import { Injectable, signal } from '@angular/core';
+import { Inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 export interface UpdateUserPayload {
     contrasena?: string;
     rol_id?: number;
     unidad_id?: number | null;
+    activo?: number;
 }
 
 @Injectable({
@@ -12,17 +13,25 @@ export interface UpdateUserPayload {
 })
 export class UserService {
 
-    private apiUrl = 'https://api-hcm-tickets-production.up.railway.app';
-
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        @Inject('API_URL') private apiUrl: string
+    ) { }
 
     // Obtener todos los usuarios
-    getAllUsers() {
-        console.log("Llamando a getAllUsers");
-        return this.http.get(`${this.apiUrl}/api/users`, {
+    getRequestingUser() {
+        console.log('Llamando a getRequestingUser');
+        return this.http.get(`${this.apiUrl}/api/users/solicitantes`, {
             withCredentials: true
         });
+    }
 
+    // obtener los usuarios soportes
+    getSupportUsers() {
+        console.log('Llamando a getSupportUsers');
+        return this.http.get(`${this.apiUrl}/api/users/soportes`, {
+            withCredentials: true
+        });
     }
 
     // Obtener un usuario
@@ -34,39 +43,20 @@ export class UserService {
 
     }
 
-    // Cambiar contraseña
-    updateUserPassword(id: number, payload: { contrasena: string }) {
-        console.log(`Llamando a updateUserPassword con id: ${id}`);
+    // Actualizar un usuario
+    updateUser(id: number, payload: UpdateUserPayload) {
+        console.log(`Llamando a updateUser con id: ${id} y payload:`, payload);
         return this.http.patch(
-            `${this.apiUrl}/api/users/${id}/update-password`,
+            `${this.apiUrl}/api/users/${id}`,
             payload,
             { withCredentials: true }
         );
-
-    }
-
-    // Cambiar rol
-    updateUserRole(id: number, payload: { newRoleId: number }) {
-        return this.http.patch(
-            `${this.apiUrl}/api/users/${id}/update-role`,
-            payload,
-            { withCredentials: true }
-        );
-    }
-
-    // Cambiar unidad
-    updateUserUnit(id: number, payload: { newUnitId: number | null }) {
-        return this.http.patch(
-            `${this.apiUrl}/api/users/${id}/update-unit`,
-            payload,
-            { withCredentials: true }
-        );
-    }
+    }   
 
     // Obtener soportes disponibles
     getAvailableSupports() {
         return this.http.get(
-            `${this.apiUrl}/api/user/soportes-disponibles`,
+            `${this.apiUrl}/api/user/soportes/disponibles`,
             { withCredentials: true }
         );
     }

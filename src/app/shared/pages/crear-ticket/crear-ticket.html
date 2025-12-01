@@ -1,16 +1,10 @@
-<div class="mx-auto max-w-4xl space-y-8 pb-12">
-
-    <div class="border-b border-slate-200 pb-5">
-        <h1 class="text-2xl font-bold text-[#002777]">Crear nuevo ticket</h1>
-        <p class="text-slate-500 mt-1">Completa el formulario a continuación para reportar tu incidencia.</p>
-    </div>
-
+<div class="mx-auto space-y-8 pb-12">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        
+
         <div class="h-1.5 w-full bg-gradient-to-r from-[#002777] to-[#62CEEA]"></div>
 
         <form (ngSubmit)="onSubmit()" class="p-8 space-y-8">
-            
+
             <section class="space-y-6">
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <span class="w-1.5 h-1.5 bg-[#62CEEA] rounded-full"></span>
@@ -18,7 +12,8 @@
                 </h3>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Asunto del problema <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Asunto del problema <span
+                            class="text-red-500">*</span></label>
                     <div class="relative">
                         <input type="text" [(ngModel)]="asunto" name="asunto" required
                             placeholder="Ej: Impresora no conecta, Pantalla azul, No puedo acceder al correo..."
@@ -28,7 +23,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Descripción detallada <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Descripción detallada <span
+                            class="text-red-500">*</span></label>
                     <textarea [(ngModel)]="descripcion" name="descripcion" rows="5" required
                         placeholder="Explica qué estabas haciendo, qué error apareció y si es un problema recurrente..."
                         class="w-full p-4 border border-slate-300 rounded-lg focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] transition-all resize-y placeholder-slate-400 text-slate-700"></textarea>
@@ -44,51 +40,69 @@
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Ubicación del problema <span class="text-red-500">*</span></label>
-                        
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Ubicación del problema <span
+                                class="text-red-500">*</span></label>
+
                         <div class="relative">
-                            <select [(ngModel)]="ubicacion_id" name="ubicacion_id" required [disabled]="loadingUbicaciones()"
+                            <select [(ngModel)]="ubicacion_id" name="ubicacion_id" required
+                                [disabled]="loadingUbicaciones()"
                                 class="w-full pl-4 pr-10 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] bg-white text-slate-700 appearance-none transition-all disabled:bg-slate-50 disabled:text-slate-400 cursor-pointer">
                                 <option [ngValue]="null" disabled selected>
                                     {{ loadingUbicaciones() ? 'Cargando ubicaciones...' : 'Selecciona el lugar donde ocurre el problema' }}
                                 </option>
-                                <option *ngFor="let u of ubicaciones()" [ngValue]="u.ubicacion_id">
-                                    {{ u.ubicacion }}
+                                @for (u of ubicaciones(); track u.ubicacion_id) {
+                                <option [ngValue]="u.ubicacion_id">
+                                    {{ u.ubicacion }} - {{u.nombre_area}}
                                 </option>
+                                }
                             </select>
-                            
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Teléfono / Anexo <span class="text-red-500">*</span></label>
-                        <input type="tel" [(ngModel)]="telefono" name="telefono" required 
-                            placeholder="Ej: 912341234"
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Direccion ip Manual </label> 
+                        <input type="tel" [(ngModel)]="ip_manual" name="ip_manual" placeholder="0.0.0.0"
                             class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] transition-all placeholder-slate-400 text-slate-700" />
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Persona que reporta <span class="text-red-500">*</span></label>
-                        <input type="text" [(ngModel)]="autor_problema" name="autor_problema" required 
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Teléfono / Anexo <span
+                                class="text-red-500">*</span></label>
+                        <input type="tel" [(ngModel)]="telefono" name="telefono" required placeholder="912341234"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] transition-all placeholder-slate-400 text-slate-700" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Persona que reporta <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" [(ngModel)]="autor_problema" name="autor_problema" required
                             placeholder="Nombre completo"
                             class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] transition-all placeholder-slate-400 text-slate-700" />
                     </div>
                 </div>
             </section>
 
-            <div *ngIf="rol === 'soporte' || rol === 'administrador'" class="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
+            <div *ngIf="rol === 'soporte' || rol === 'administrador'"
+                class="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
                 <h4 class="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
                     Clasificación Técnica (Uso Interno)
                 </h4>
-                
+
                 <div class="relative">
                     <select [(ngModel)]="evento_id" name="evento_id"
                         class="w-full px-4 py-2.5 border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-indigo-900 font-medium cursor-pointer">
@@ -101,7 +115,7 @@
             </div>
 
             <div class="pt-6 flex flex-col sm:flex-row gap-4 items-center border-t border-slate-100">
-                
+
                 <button type="button" (click)="cancelar()"
                     class="order-2 sm:order-1 w-full sm:w-auto px-6 py-3 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-800 transition-colors font-semibold text-sm">
                     Cancelar
@@ -109,16 +123,21 @@
 
                 <button type="submit" [disabled]="loading() || !ubicacion_id"
                     class="order-1 sm:order-2 w-full sm:w-auto flex-1 bg-[#002777] hover:bg-[#001b55] text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    
+
                     <span *ngIf="!loading()">Enviar Ticket</span>
                     <span *ngIf="loading()">Procesando...</span>
-                    
-                    <svg *ngIf="!loading()" class="w-5 h-5 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+
+                    <svg *ngIf="!loading()" class="w-5 h-5 text-[#62CEEA]" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                     </svg>
                     <svg *ngIf="loading()" class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
                     </svg>
                 </button>
             </div>

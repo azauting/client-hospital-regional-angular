@@ -13,22 +13,36 @@ import { FormsModule } from '@angular/forms';
 })
 export class AdminTicketsSinRevisarComponent implements OnInit {
 
-    // Signals
+    // =========================================
+    // Signals internas (estado reactivo real)
+    // =========================================
     tickets = signal<any[]>([]);
     loading = signal<boolean>(false);
     errorMsg = signal<string>('');
+    fechaActual = signal(new Date());
 
+    // =========================================
+    // Propiedades normales (ngModel bind)
+    // =========================================
+    filtroBusqueda = '';
+    filtroOrigen = 'todos';
+    filtroEvento = 'todos';
+    filtroFechaDesde = '';
+    filtroFechaHasta = '';
+
+    // Signals espejo (reactivo real)
+    _filtroBusqueda = signal('');
+    _filtroOrigen = signal('todos');
+    _filtroEvento = signal('todos');
+    _filtroFechaDesde = signal('');
+    _filtroFechaHasta = signal('');
+
+    // =========================================
     // Paginación
+    // =========================================
     currentPage = 1;
     itemsPerPage = 10;
     totalTickets = 0;
-
-    // Filtros
-    filtroBusqueda: string = '';
-    filtroOrigen: string = 'todos';
-    filtroEvento: string = 'todos';
-    filtroFechaDesde: string = '';
-    filtroFechaHasta: string = '';
 
     constructor(
         private ticketService: TicketService,
@@ -37,25 +51,26 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
 
     ngOnInit() {
         this.cargarTickets();
+
+        // Timer para refrescar hora
+        setInterval(() => this.fechaActual.set(new Date()), 1000);
     }
 
-    get fechaActual(): Date {
-        return new Date();
-    }
-
+    // =========================================
+    // Cargar tickets iniciales
+    // =========================================
     cargarTickets() {
         this.loading.set(true);
         this.errorMsg.set('');
-        
+
         this.ticketService.getTicketsSinRevisar()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
-                        // Soporta ambas estructuras de respuesta por si acaso
                         const data = resp.data?.tickets ?? resp.data?.tickets_sin_revisar ?? [];
                         this.tickets.set(data);
-                        // El totalTickets se actualizará dinámicamente según el filtro
+                        this.totalTickets = data.length;
                     } else {
                         this.errorMsg.set(resp?.message || 'No se pudieron cargar los tickets.');
                     }
@@ -66,44 +81,45 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
             });
     }
 
-    verDetalle(ticket_id: number): void {
-        this.router.navigate([`/admin/ticket/${ticket_id}/sin-revisar`]);
-    }
+    // =========================================
+    // Eventos ngModel → signals
+    // =========================================
+    onFiltroBusquedaChange(v: string) { this.filtroBusqueda = v; this._filtroBusqueda.set(v); }
+    onFiltroOrigenChange(v: string) { this.filtroOrigen = v; this._filtroOrigen.set(v); }
+    onFiltroEventoChange(v: string) { this.filtroEvento = v; this._filtroEvento.set(v); }
+    onFiltroFechaDesdeChange(v: string) { this.filtroFechaDesde = v; this._filtroFechaDesde.set(v); }
+    onFiltroFechaHastaChange(v: string) { this.filtroFechaHasta = v; this._filtroFechaHasta.set(v); }
 
-    // =========================================================
-    // LÓGICA DE FILTRADO Y PAGINACIÓN
-    // =========================================================
-
+    // =========================================
+    // Filtrado y Paginación
+    // =========================================
     getFilteredTickets() {
-        const search = this.filtroBusqueda.toLowerCase().trim();
+        const search = this._filtroBusqueda().toLowerCase().trim();
 
         return this.tickets().filter(t => {
-
-            // 1. Búsqueda Texto
             const matchSearch =
                 !search ||
                 t.asunto.toLowerCase().includes(search) ||
                 t.usuario_nombre.toLowerCase().includes(search) ||
                 t.ticket_id.toString().includes(search);
 
-            // 2. Origen
             const matchOrigen =
-                this.filtroOrigen === 'todos' ||
-                t.origen?.toLowerCase() === this.filtroOrigen;
+                this._filtroOrigen() === 'todos' ||
+                t.origen?.toLowerCase() === this._filtroOrigen();
 
-            // 3. Evento
             const matchEvento =
-                this.filtroEvento === 'todos' ||
-                t.evento?.toLowerCase() === this.filtroEvento;
+                this._filtroEvento() === 'todos' ||
+                t.evento?.toLowerCase() === this._filtroEvento();
 
-            // 4. Fechas
             const fechaTicket = new Date(t.fecha_creacion);
-            
-            const matchDesde = !this.filtroFechaDesde || 
-                fechaTicket >= new Date(this.filtroFechaDesde);
 
-            const matchHasta = !this.filtroFechaHasta || 
-                fechaTicket <= new Date(this.filtroFechaHasta + 'T23:59:59');
+            const matchDesde =
+                !this._filtroFechaDesde() ||
+                fechaTicket >= new Date(this._filtroFechaDesde());
+
+            const matchHasta =
+                !this._filtroFechaHasta() ||
+                fechaTicket <= new Date(this._filtroFechaHasta() + 'T23:59:59');
 
             return matchSearch && matchOrigen && matchEvento && matchDesde && matchHasta;
         });
@@ -111,7 +127,7 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
 
     getPaginatedTickets() {
         const filtered = this.getFilteredTickets();
-        this.totalTickets = filtered.length; // Actualizar total para la UI
+        this.totalTickets = filtered.length;
 
         const start = (this.currentPage - 1) * this.itemsPerPage;
         return filtered.slice(start, start + this.itemsPerPage);
@@ -123,57 +139,59 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
         this.filtroEvento = 'todos';
         this.filtroFechaDesde = '';
         this.filtroFechaHasta = '';
+
+        this._filtroBusqueda.set('');
+        this._filtroOrigen.set('todos');
+        this._filtroEvento.set('todos');
+        this._filtroFechaDesde.set('');
+        this._filtroFechaHasta.set('');
+
         this.currentPage = 1;
     }
 
-    // Optimizador para ngFor
-    trackByTicketId(index: number, ticket: any): number {
+    // TrackBy
+    trackByTicketId(index: number, ticket: any) {
         return ticket.ticket_id;
     }
 
-    // =========================================================
-    // PAGINACIÓN UI
-    // =========================================================
-
-    get totalPages(): number {
+    // ===============================
+    // Paginación UI
+    // ===============================
+    get totalPages() {
         return Math.ceil(this.totalTickets / this.itemsPerPage) || 1;
     }
 
-    previousPage(): void {
-        if (this.currentPage > 1) this.currentPage--;
-    }
+    previousPage() { if (this.currentPage > 1) this.currentPage--; }
+    nextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
 
-    nextPage(): void {
-        if (this.currentPage < this.totalPages) this.currentPage++;
-    }
-
-    goToPage(page: number): void {
+    goToPage(page: number) {
         if (page !== -1 && page >= 1 && page <= this.totalPages) {
             this.currentPage = page;
         }
     }
 
-    getPageNumbers(): number[] {
+    getPageNumbers() {
         const pages: number[] = [];
         const total = this.totalPages;
         const current = this.currentPage;
 
-        if (total <= 7) {
-            for (let i = 1; i <= total; i++) pages.push(i);
-        } else {
-            if (current <= 4) {
-                pages.push(1, 2, 3, 4, 5, -1, total);
-            } else if (current >= total - 3) {
-                pages.push(1, -1, total - 4, total - 3, total - 2, total - 1, total);
-            } else {
-                pages.push(1, -1, current - 1, current, current + 1, -1, total);
-            }
-        }
-        return pages;
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+        if (current <= 4)
+            return [1, 2, 3, 4, 5, -1, total];
+
+        if (current >= total - 3)
+            return [1, -1, total - 4, total - 3, total - 2, total - 1, total];
+
+        return [1, -1, current - 1, current, current + 1, -1, total];
     }
 
-    onItemsPerPageChange(event: any): void {
+    onItemsPerPageChange(event: any) {
         this.itemsPerPage = Number(event.target.value);
         this.currentPage = 1;
+    }
+
+    verDetalle(ticket_id: number) {
+        this.router.navigate([`/admin/ticket/${ticket_id}/sin-revisar`]);
     }
 }

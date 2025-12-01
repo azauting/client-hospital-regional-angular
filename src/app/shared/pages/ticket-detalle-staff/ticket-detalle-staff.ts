@@ -203,7 +203,7 @@ export class TicketDetalleStaffComponent implements OnInit {
     // --- Helpers & UI Logic ---
 
     volver() {
-        const ruta = this.currentUser?.rol === 'soporte' ? '/soporte/tickets' : '/admin/tickets';
+        const ruta = this.currentUser?.rol === 'soporte' ? '/soporte' : '/admin/tickets/revisados';
         this.router.navigate([ruta]);
     }
 

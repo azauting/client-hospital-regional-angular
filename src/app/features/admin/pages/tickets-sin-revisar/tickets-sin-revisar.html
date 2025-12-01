@@ -1,11 +1,15 @@
 <div class="mx-auto space-y-6 pb-12">
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        
+    <!-- HEADER -->
+    <div
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+
         <div class="flex items-center gap-5">
             <div class="bg-[#002777]/10 p-4 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#002777]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#002777]" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
             <div>
@@ -19,49 +23,62 @@
         <div class="flex items-center gap-3">
             <div class="text-right hidden sm:block">
                 <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Última actualización</p>
-                <p class="text-sm font-medium text-slate-700 font-mono">{{ fechaActual | date:'HH:mm:ss' }}</p>
+                <p class="text-sm font-medium text-slate-700 font-mono">{{ fechaActual() | date:'HH:mm:ss' }}</p>
             </div>
             <button type="button" (click)="cargarTickets()"
                 class="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl hover:border-[#62CEEA] hover:shadow-md transition-all duration-300">
-                <svg class="h-4 w-4 text-[#002777] group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <svg class="h-4 w-4 text-[#002777] group-hover:rotate-180 transition-transform duration-500" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 <span class="text-sm font-bold text-[#002777]">Actualizar</span>
             </button>
         </div>
     </div>
 
+    <!-- FILTROS -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
                 Filtros de Búsqueda
             </h3>
-            <button *ngIf="filtroBusqueda || filtroOrigen !== 'todos' || filtroEvento !== 'todos' || filtroFechaDesde || filtroFechaHasta" 
-                (click)="resetFiltros()" 
+
+            <button
+                *ngIf="filtroBusqueda || filtroOrigen !== 'todos' || filtroEvento !== 'todos' || filtroFechaDesde || filtroFechaHasta"
+                (click)="resetFiltros()"
                 class="text-xs font-bold text-red-500 hover:text-red-700 hover:underline transition-colors">
                 Limpiar todo
             </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            
+
+            <!-- BUSCADOR -->
             <div class="md:col-span-4 lg:col-span-5">
                 <label class="text-xs font-bold text-[#002777] mb-1 block">Buscar</label>
-                <div class="relative">
-                    <input type="text" [(ngModel)]="filtroBusqueda"
-                        placeholder="Usuario, Asunto, ID..."
-                        class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] transition-all">
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
+
+                <input type="text" [ngModel]="filtroBusqueda" (ngModelChange)="onFiltroBusquedaChange($event)"
+                    placeholder="Usuario, Asunto, ID..." class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 text-sm 
+                           focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777]">
+
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
 
+            <!-- ORIGEN -->
             <div class="md:col-span-4 lg:col-span-2">
                 <label class="text-xs font-bold text-[#002777] mb-1 block">Origen</label>
-                <select [(ngModel)]="filtroOrigen"
-                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] bg-white">
+
+                <select [ngModel]="filtroOrigen" (ngModelChange)="onFiltroOrigenChange($event)" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm 
+                           focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] bg-white">
                     <option value="todos">Todos</option>
                     <option value="solicitante">Solicitante</option>
                     <option value="soporte">Soporte</option>
@@ -69,10 +86,12 @@
                 </select>
             </div>
 
+            <!-- EVENTO -->
             <div class="md:col-span-4 lg:col-span-2">
                 <label class="text-xs font-bold text-[#002777] mb-1 block">Evento</label>
-                <select [(ngModel)]="filtroEvento"
-                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] bg-white">
+
+                <select [ngModel]="filtroEvento" (ngModelChange)="onFiltroEventoChange($event)" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm 
+                           focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] bg-white">
                     <option value="todos">Todos</option>
                     <option value="requerimiento">Requerimiento</option>
                     <option value="incidente">Incidente</option>
@@ -80,29 +99,39 @@
                 </select>
             </div>
 
+            <!-- FECHAS -->
             <div class="md:col-span-12 lg:col-span-3 grid grid-cols-2 gap-2">
                 <div>
                     <label class="text-xs font-bold text-[#002777] mb-1 block">Desde</label>
-                    <input type="date" [(ngModel)]="filtroFechaDesde"
-                        class="w-full px-2 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777]">
+
+                    <input type="date" [ngModel]="filtroFechaDesde" (ngModelChange)="onFiltroFechaDesdeChange($event)"
+                        class="w-full px-2 py-2.5 rounded-lg border border-slate-200 text-sm 
+                               focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777]">
                 </div>
+
                 <div>
                     <label class="text-xs font-bold text-[#002777] mb-1 block">Hasta</label>
-                    <input type="date" [(ngModel)]="filtroFechaHasta"
-                        class="w-full px-2 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777]">
+
+                    <input type="date" [ngModel]="filtroFechaHasta" (ngModelChange)="onFiltroFechaHastaChange($event)"
+                        class="w-full px-2 py-2.5 rounded-lg border border-slate-200 text-sm 
+                               focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777]">
                 </div>
             </div>
+
         </div>
     </div>
 
+    <!-- LOADING -->
     <div *ngIf="loading()" class="flex flex-col items-center justify-center py-12">
         <div class="w-10 h-10 border-4 border-[#62CEEA]/30 border-t-[#002777] rounded-full animate-spin"></div>
         <p class="mt-3 text-sm font-medium text-[#002777]">Recuperando tickets...</p>
     </div>
 
+    <!-- ERROR -->
     <div *ngIf="!loading() && errorMsg()" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
         <svg class="h-5 w-5 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
         <div>
             <h3 class="text-sm font-medium text-red-800">Error de conexión</h3>
@@ -110,7 +139,9 @@
         </div>
     </div>
 
-    <div *ngIf="!loading() && !errorMsg() && tickets().length === 0" class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
+    <!-- SIN TICKETS -->
+    <div *ngIf="!loading() && !errorMsg() && tickets().length === 0"
+        class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -120,8 +151,10 @@
         <p class="text-slate-500 mt-2">No hay tickets pendientes de revisión en este momento.</p>
     </div>
 
-    <div *ngIf="!loading() && tickets().length > 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        
+    <!-- TABLA -->
+    <div *ngIf="!loading() && tickets().length > 0"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
@@ -134,17 +167,19 @@
                         <th class="px-6 py-4 text-right">Acción</th>
                     </tr>
                 </thead>
+
                 <tbody class="divide-y divide-slate-100">
-                    <tr *ngFor="let t of getPaginatedTickets(); trackBy: trackByTicketId" 
+                    <tr *ngFor="let t of getPaginatedTickets(); trackBy: trackByTicketId"
                         class="hover:bg-[#62CEEA]/5 transition-colors duration-150 group">
-                        
+
                         <td class="px-6 py-4">
                             <span class="font-mono text-sm font-bold text-[#002777]">#{{ t.ticket_id }}</span>
                         </td>
 
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200">
                                     {{ t.usuario_nombre?.charAt(0).toUpperCase() }}
                                 </div>
                                 <div class="flex flex-col">
@@ -155,17 +190,21 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            <p class="text-sm font-medium text-slate-700 group-hover:text-[#002777] transition-colors line-clamp-2">
+                            <p
+                                class="text-sm font-medium text-slate-700 group-hover:text-[#002777] transition-colors line-clamp-2">
                                 {{ t.asunto }}
                             </p>
                         </td>
 
                         <td class="px-6 py-4">
                             <div class="flex flex-col gap-1">
-                                <span class="inline-flex w-fit items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                <span
+                                    class="inline-flex w-fit items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
                                     {{ t.origen | titlecase }}
                                 </span>
-                                <span class="inline-flex w-fit items-center px-2 py-0.5 rounded text-[10px] font-medium border"
+
+                                <span
+                                    class="inline-flex w-fit items-center px-2 py-0.5 rounded text-[10px] font-medium border"
                                     [ngClass]="{
                                         'bg-purple-50 text-purple-700 border-purple-100': t.evento === 'incidente',
                                         'bg-blue-50 text-blue-700 border-blue-100': t.evento === 'requerimiento',
@@ -178,7 +217,8 @@
 
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                <span class="text-sm font-medium text-slate-600">{{ t.fecha_creacion | date:'dd/MM/yyyy' }}</span>
+                                <span class="text-sm font-medium text-slate-600">{{ t.fecha_creacion | date:'dd/MM/yyyy'
+                                    }}</span>
                                 <span class="text-xs text-slate-400">{{ t.fecha_creacion | date:'HH:mm' }} hrs</span>
                             </div>
                         </td>
@@ -187,20 +227,27 @@
                             <button (click)="verDetalle(t.ticket_id)"
                                 class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#002777] text-white text-sm font-bold rounded-lg shadow-sm hover:bg-[#003da5] hover:shadow-md transition-all active:transform active:scale-95">
                                 <span>Revisar</span>
-                                <svg class="w-4 h-4 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                <svg class="w-4 h-4 text-[#62CEEA]" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
                             </button>
                         </td>
+
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-            
+        <!-- PAGINACIÓN -->
+        <div
+            class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+            <!-- ITEMS PER PAGE -->
             <div class="flex items-center gap-2 text-sm text-slate-600">
                 <span>Mostrar:</span>
+
                 <select [value]="itemsPerPage" (change)="onItemsPerPageChange($event)"
                     class="border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-[#002777]">
                     <option value="5">5</option>
@@ -209,7 +256,9 @@
                 </select>
             </div>
 
+            <!-- BOTONES PÁGINAS -->
             <div class="flex items-center gap-1">
+
                 <button (click)="previousPage()" [disabled]="currentPage === 1"
                     class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors">
                     <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,9 +269,11 @@
                 <div class="flex items-center gap-1 px-2">
                     <button *ngFor="let page of getPageNumbers()" (click)="goToPage(page)"
                         class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-all"
-                        [ngClass]="page === currentPage 
-                            ? 'bg-[#002777] text-white shadow-md' 
-                            : (page === -1 ? 'text-slate-400 cursor-default' : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-50')">
+                        [ngClass]="page === currentPage
+                            ? 'bg-[#002777] text-white shadow-md'
+                            : (page === -1 
+                                ? 'text-slate-400 cursor-default' 
+                                : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-50')">
                         {{ page === -1 ? '...' : page }}
                     </button>
                 </div>
@@ -233,6 +284,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
+
             </div>
         </div>
     </div>

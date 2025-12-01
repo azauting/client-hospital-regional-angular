@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -6,17 +6,18 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AuthService {
 
-    private apiUrl = 'https://api-hcm-tickets-production.up.railway.app';
 
     user = signal<any>(null);
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient,
+        @Inject('API_URL') private apiUrl: string
+    ) { }
 
     login(correo: string, contrasena: string) {
         const body = { correo, contrasena };
 
-        return this.http.post(`${this.apiUrl}/auth/login`, body, {
-            withCredentials: true, // 👈 necesario para que se envíe/guarde cookie
+        return this.http.post(`${this.apiUrl}/api/login`, body, {
+            withCredentials: true,
         });
     }
     refreshUser() {
@@ -35,9 +36,8 @@ export class AuthService {
         });
     }
 
-    // 👇 NUEVO: probar si la cookie funciona
     getMe() {
-        return this.http.get(`${this.apiUrl}/auth/me`, {
+        return this.http.get(`${this.apiUrl}/api/auth/me`, {
             withCredentials: true,
         });
     }

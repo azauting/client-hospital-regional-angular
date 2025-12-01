@@ -1,346 +1,384 @@
-<div class="min-h-screen bg-slate-50/50 pb-12">
+<div *ngIf="loading()" class="flex flex-col items-center justify-center py-32 animate-pulse">
+    <div class="h-10 w-10 bg-[#002777] rounded-full animate-spin mb-4 border-4 border-t-transparent border-[#62CEEA]">
+    </div>
+    <p class="text-slate-500 font-medium">Cargando expediente del ticket...</p>
+</div>
 
-    <div class="mb-6 flex items-center justify-between">
-        <button (click)="volver()"
-            class="group flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
-            <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Volver al listado
-        </button>
+<div *ngIf="!loading() && ticket() as t" class="mx-auto px-4 space-y-6">
+
+    <div *ngIf="errorMsg()" class="rounded-xl bg-red-50 p-4 border border-red-200 shadow-sm flex gap-3 animate-fade-in">
+        <svg class="h-5 w-5 text-red-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd" />
+        </svg>
+        <p class="text-sm font-medium text-red-800">{{ errorMsg() }}</p>
     </div>
 
-    <div *ngIf="loading()" class="flex flex-col items-center justify-center py-20 animate-pulse">
-        <div class="h-8 w-8 bg-indigo-600 rounded-lg animate-spin mb-4"></div>
-        <p class="text-slate-500 font-medium">Recuperando información del ticket...</p>
+    <div *ngIf="successMsg()"
+        class="rounded-xl bg-green-50 p-4 border border-green-200 shadow-sm flex gap-3 animate-fade-in">
+        <svg class="h-5 w-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <p class="text-sm font-medium text-green-800">{{ successMsg() }}</p>
     </div>
 
-    <div *ngIf="!loading() && ticket() as t" class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
 
-        <div *ngIf="errorMsg()" class="rounded-md bg-red-50 p-4 border border-red-200 shadow-sm animate-fade-in">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clip-rule="evenodd" />
+        <div class="p-8 sm:p-10">
+
+            <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-8">
+                <button (click)="volver()"
+                    class="group flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#002777] transition-colors">
+                    <div class="p-1.5 rounded-full group-hover:bg-slate-100 transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </div>
+                    <span>Volver al listado</span>
+                </button>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {{ t.fecha_creacion | date:'medium' }}
+                    </span>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                        [ngClass]="getPriorityClass(t.prioridad)">
+                        {{ t.prioridad }}
+                    </span>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                        [ngClass]="getStatusClass(t.estado)">
+                        {{ t.estado }}
+                    </span>
+                    <span
+                        class="px-3 py-1.5 rounded-lg bg-[#002777] text-white text-sm font-bold shadow-sm shadow-blue-900/20">
+                        #{{ t.ticket_id }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-8">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-2 border-b border-slate-200 pb-2">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Identidad</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Solicitante</p>
+                            <p class="text-sm font-bold text-slate-900">{{ t.usuario_nombre }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Autor del Problema</p>
+                            <p class="text-sm font-bold text-slate-900">{{ t.autor_problema }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-2 border-b border-slate-200 pb-2">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Contacto</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Correo</p>
+                            <p class="text-sm font-semibold text-slate-900 truncate" title="{{ t.correo }}">{{
+                                t.correo }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Teléfono</p>
+                            <p class="text-sm font-semibold text-slate-900">{{ t.telefono }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-2 border-b border-slate-200 pb-2">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Red</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">IP Automática</p>
+                            <code
+                                class="text-xs font-mono font-bold text-[#002777] bg-white px-2 py-0.5 rounded border border-slate-200 inline-block mt-1">{{ t.direccion_ip || '---' }}</code>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">IP Manual</p>
+                            <code
+                                class="text-xs font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200 inline-block mt-1">{{ t.ip_manual || '---' }}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-tight">{{ t.asunto }}</h1>
+                <div class="relative pl-6 border-l-4 border-[#002777]/20">
+                    <h3 class="text-xs font-bold text-[#002777] uppercase tracking-widest mb-3">Descripción del
+                        Problema</h3>
+                    <div class="prose prose-slate max-w-none text-slate-700 text-base leading-relaxed">
+                        {{ t.descripcion }}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-slate-50/80 border-t border-slate-200 p-8 sm:p-10" *ngIf="detalle() as det">
+
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium text-red-800">{{ errorMsg() }}</p>
-                </div>
+                <h2 class="text-xl font-bold text-slate-800">Gestión del Ticket</h2>
             </div>
-        </div>
 
-        <div *ngIf="successMsg()" class="rounded-md bg-green-50 p-4 border border-green-200 shadow-sm animate-fade-in">
-            <p class="text-sm font-medium text-green-800 text-center">{{ successMsg() }}</p>
-        </div>
-
-        <div class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl overflow-hidden">
-            <div
-                class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <span class="font-mono text-xs font-bold text-slate-500 bg-slate-200/60 px-2 py-1 rounded">#{{
-                        t.ticket_id }}</span>
-                    <span class="text-xs text-slate-500">{{ t.fecha_creacion | date:'medium' }}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                        [ngClass]="getPriorityClass(t.prioridad)">
-                        Prioridad {{ t.prioridad | titlecase }}
-                    </span>
-                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
-                        [ngClass]="getStatusClass(t.estado)">
-                        {{ t.estado | uppercase }}
-                    </span>
-                </div>
-            </div>
-            <div class="px-6 py-6">
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl mb-2">{{ t.asunto }}</h1>
-                <div
-                    class="prose prose-sm prose-slate max-w-none text-slate-600 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                    <p class="whitespace-pre-line">{{ t.descripcion }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <div class="lg:col-span-2 space-y-8">
-
-                <div *ngIf="detalle() as det"
-                    class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl overflow-hidden">
-                    <div class="px-6 py-5 border-b border-slate-100 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
+                <div *ngIf="!det.soporte_asignado"
+                    class="p-8 text-center flex flex-col items-center justify-center gap-4">
+                    <div
+                        class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-2">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
-                        <h2 class="text-base font-semibold leading-6 text-slate-900">Resolución y Asignación</h2>
                     </div>
-
-                    <div class="p-6 space-y-6">
-                        <div *ngIf="!det.soporte_asignado"
-                            class="bg-amber-50 rounded-lg p-4 border border-amber-100 flex items-center justify-between">
-                            <div>
-                                <h3 class="text-sm font-medium text-amber-800">Ticket sin asignar</h3>
-                                <p class="text-sm text-amber-600 mt-1">Nadie está trabajando en este ticket actualmente.
-                                </p>
-                            </div>
-                            <button (click)="autoAsignarme()" [disabled]="loadingAction()"
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-white text-amber-700 text-sm font-medium rounded-lg shadow-sm border border-amber-200 hover:bg-amber-50 transition-all focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
-                                <svg *ngIf="!loadingAction()" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Autoasignarme
-                            </button>
-                        </div>
-
-                        <div *ngIf="det.soporte_asignado"
-                            class="flex items-center gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                            <div
-                                class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200">
-                                {{ det.soporte_nombre?.charAt(0) | uppercase }}
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Técnico
-                                    Responsable</p>
-                                <p class="text-sm font-bold text-slate-900">{{ det.soporte_nombre }}</p>
-                            </div>
-                        </div>
-
-                        <div *ngIf="det.respuesta"
-                            class="relative pl-4 border-l-4 border-emerald-500 bg-emerald-50/50 p-4 rounded-r-lg">
-                            <p class="text-xs font-bold text-emerald-700 uppercase mb-1">Solución Propuesta</p>
-                            <p class="text-sm text-slate-700 whitespace-pre-line">{{ det.respuesta }}</p>
-                        </div>
-
-                        <div *ngIf="t.estado !== 'cerrado' && det.soporte_asignado"
-                            class="pt-4 border-t border-slate-100">
-                            <label class="block text-sm font-medium leading-6 text-slate-900 mb-2">Respuesta Técnica /
-                                Solución</label>
-                            <textarea [(ngModel)]="respuesta" rows="5"
-                                class="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                placeholder="Describa los pasos tomados para la solución..."></textarea>
-
-                            <div class="mt-4 flex justify-end">
-                                <button (click)="cerrarTicket()" [disabled]="loadingAction()"
-                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors disabled:opacity-50">
-                                    <svg *ngIf="loadingAction()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                        fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    Resolver y Cerrar Ticket
-                                </button>
-                            </div>
-                        </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Ticket Libre</h3>
+                        <p class="text-slate-500 max-w-sm mx-auto">Este ticket aún no tiene un técnico responsable.
+                            Tómalo para comenzar a trabajar en la solución.</p>
                     </div>
+                    <button (click)="autoAsignarme()" [disabled]="loadingAction()"
+                        class="mt-2 px-6 py-2.5 bg-[#002777] hover:bg-[#001f5c] text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Asignarme este ticket
+                    </button>
                 </div>
 
-                <div class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl overflow-hidden">
-                    <div class="px-6 py-5 border-b border-slate-100">
-                        <h2 class="text-base font-semibold leading-6 text-slate-900">Bitácora de Observaciones</h2>
-                    </div>
-                    <div class="p-6">
-                        <div *ngIf="t.estado !== 'cerrado'" class="flex gap-4 mb-8">
-                            <div class="flex-shrink-0">
-                                <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
-                                    <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
+                <div *ngIf="det.soporte_asignado" class="divide-y divide-slate-100">
+                    <div class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <div
+                                    class="w-14 h-14 rounded-full bg-[#002777] text-white flex items-center justify-center font-bold text-xl shadow-md border-2 border-white">
+                                    {{ det.soporte_nombre?.charAt(0) | uppercase }}
+                                </div>
+                                <div
+                                    class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full">
                                 </div>
                             </div>
-                            <div class="flex-grow">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Soporte
+                                    encargado</p>
+                                <p class="text-lg font-bold text-slate-900">{{ det.soporte_nombre }}</p>
+                            </div>
+                        </div>
+
+                        <div *ngIf="t.estado !== 'cerrado'" class="flex items-center">
+                            <button (click)="abrirModalIntegrantes()"
+                                class="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg hover:border-[#002777] hover:text-[#002777] hover:bg-blue-50/50 transition-all shadow-sm">
+                                <div class="bg-slate-100 group-hover:bg-[#002777]/10 p-1 rounded-md transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                                <span>Agregar Colaborador</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div *ngIf="integrantes().length > 0" class="px-6 py-4 bg-slate-50/30">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Equipo de Apoyo
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <div *ngFor="let int of integrantes()"
+                                class="flex items-center gap-2 pl-1 pr-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm">
+                                <span
+                                    class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">{{
+                                    int.usuario_nombre.charAt(0) }}</span>
+                                <span class="text-sm font-medium text-slate-700">{{ int.usuario_nombre }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="t.estado !== 'cerrado' && det.soporte_asignado" class="animate-fade-in">
+                <label class="block text-sm font-bold text-slate-800 mb-2 ml-1">Respuesta del Soporte / Solución
+                    Técnica</label>
+                <div class="relative">
+                    <textarea [(ngModel)]="respuesta" rows="6"
+                        class="w-full rounded-2xl border-slate-300 shadow-sm focus:border-[#002777] focus:ring focus:ring-[#002777]/20 text-slate-700 text-base leading-relaxed p-4 resize-none transition-shadow"
+                        placeholder="Describe detalladamente la solución aplicada o los pasos técnicos realizados..."></textarea>
+
+                    <div class="flex justify-end mt-3">
+                        <button (click)="cerrarTicket()" [disabled]="loadingAction() || !respuesta"
+                            class="group inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95">
+                            <span *ngIf="!loadingAction()" class="flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Resolver y Cerrar Ticket
+                            </span>
+                            <span *ngIf="loadingAction()">Guardando...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="t.estado === 'cerrado' && det.respuesta"
+                class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6">
+                <h3 class="text-sm font-bold text-emerald-800 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <div class="p-1 bg-emerald-100 rounded-md">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    Solución Aplicada
+                </h3>
+                <div
+                    class="prose prose-sm max-w-none text-slate-700 bg-white p-4 rounded-xl border border-emerald-100/50 shadow-sm">
+                    <p class="whitespace-pre-line">{{ det.respuesta }}</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-8 sm:p-10 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Observaciones internas
+                </h3>
+                <span class="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{{
+                    observaciones().length }} Registros</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div *ngIf="t.estado !== 'cerrado'" class="lg:col-span-12 mb-4">
+                    <div class="flex gap-4">
+                        <div class="hidden sm:block">
+                            <div
+                                class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                                YO</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="relative group">
                                 <textarea [(ngModel)]="nuevaObservacion" rows="3"
-                                    class="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                    placeholder="Añadir nota interna..."></textarea>
-                                <div class="mt-2 flex justify-end">
+                                    class="w-full rounded-2xl border-slate-300 bg-slate-50 p-4 text-sm focus:bg-white focus:border-[#002777] focus:ring focus:ring-[#002777]/10 transition-all resize-none shadow-sm"
+                                    placeholder="Escribe una nota interna o actualización..."></textarea>
+                                <div class="absolute bottom-3 right-3">
                                     <button (click)="agregarObservacion()"
                                         [disabled]="!nuevaObservacion() || loadingAction()"
-                                        class="px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-md text-xs font-semibold shadow-sm hover:bg-slate-50">
-                                        Agregar Nota
+                                        class="bg-[#002777] hover:bg-[#001f5c] text-white p-2 rounded-lg shadow-md transition-all disabled:opacity-50 disabled:shadow-none">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="flow-root">
-                            <ul role="list" class="-mb-8">
-                                <li *ngFor="let obs of observaciones(); let last = last">
-                                    <div class="relative pb-8">
-                                        <span *ngIf="!last"
-                                            class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200"
-                                            aria-hidden="true"></span>
-                                        <div class="relative flex space-x-3">
-                                            <div>
-                                                <span
-                                                    class="h-8 w-8 rounded-full bg-indigo-50 flex items-center justify-center ring-4 ring-white">
-                                                    <svg class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                                    </svg>
-                                                </span>
-                                            </div>
-                                            <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                                                <div>
-                                                    <p class="text-sm text-slate-500">
-                                                        <span class="font-medium text-slate-900">{{ obs.usuario_nombre
-                                                            }}</span> comentó:
-                                                    </p>
-                                                    <p class="text-sm text-slate-700 mt-1 whitespace-pre-line">{{
-                                                        obs.observacion }}</p>
-                                                </div>
-                                                <div class="whitespace-nowrap text-right text-xs text-slate-400">
-                                                    {{ obs.fecha_creacion | date:'MMM d, h:mm a' }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li *ngIf="observaciones().length === 0" class="pb-8">
-                                    <p class="text-sm text-slate-400 italic pl-12">No hay observaciones internas
-                                        registradas.</p>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-6">
-
-                <div class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl p-6">
-                    <h3 class="text-sm font-semibold leading-6 text-slate-900 border-b border-slate-100 pb-2 mb-4">
-                        Información del Solicitante</h3>
-                    <dl class="space-y-4">
-                        <div>
-                            <dt class="text-xs font-medium text-slate-500 uppercase tracking-wider">Usuario / Cuenta
-                            </dt>
-                            <dd class="mt-1 text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                {{ t.usuario_nombre }}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs font-medium text-slate-500 uppercase tracking-wider">Reportado por</dt>
-                            <dd class="mt-1 text-sm text-slate-900">{{ t.autor_problema }}</dd>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <dt class="text-xs font-medium text-slate-500 uppercase tracking-wider">Teléfono</dt>
-                                <dd class="mt-1 text-sm text-slate-900">{{ t.telefono }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-medium text-slate-500 uppercase tracking-wider">IP</dt>
-                                <dd
-                                    class="mt-1 text-sm font-mono text-slate-600 bg-slate-100 px-1 rounded inline-block">
-                                    {{ t.direccion_ip }}</dd>
-                            </div>
-                        </div>
-                    </dl>
-                </div>
-
-                <div class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl p-6">
-                    <h3 class="text-sm font-semibold leading-6 text-slate-900 border-b border-slate-100 pb-2 mb-4">
-                        Ubicación del Incidente</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-slate-400 mt-0.5" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-slate-900">{{ t.ubicacion }}</p>
-                                <p class="text-xs text-slate-500">{{ t.unidad }}</p>
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-slate-50 mt-3">
-                            <p class="text-xs text-slate-400">Origen del ticket: <span
-                                    class="text-slate-600 font-medium">{{ t.origen }}</span></p>
-                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold leading-6 text-slate-900">Equipo Involucrado</h3>
-                        <button *ngIf="t.estado !== 'cerrado'" (click)="abrirModalIntegrantes()"
-                            class="text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded transition-colors">
-                            + Agregar
-                        </button>
-                    </div>
-
-                    <div class="space-y-3">
-                        <div *ngFor="let int of integrantes()" class="flex items-center gap-3">
+                <div class="lg:col-span-12">
+                    <div
+                        class="relative pl-6 sm:pl-10 space-y-8 before:absolute before:left-3 sm:before:left-5 before:top-2 before:bottom-0 before:w-0.5 before:bg-slate-200">
+                        <div *ngFor="let obs of observaciones()" class="relative group">
                             <div
-                                class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                                {{ int.usuario_nombre.charAt(0) | uppercase }}
+                                class="absolute -left-[27px] sm:-left-[35px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-slate-300 group-hover:border-[#002777] transition-colors shadow-sm z-10">
                             </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium text-slate-900 truncate">{{ int.usuario_nombre }}</p>
-                                <p class="text-xs text-slate-500 truncate">{{ int.correo }}</p>
+                            <div
+                                class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-bold text-slate-900">{{ obs.usuario_nombre
+                                            }}</span>
+                                        <span
+                                            class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">Staff</span>
+                                    </div>
+                                    <span class="text-xs text-slate-400 font-mono">{{ obs.fecha_creacion |
+                                        date:'dd/MM/yyyy HH:mm' }}</span>
+                                </div>
+                                <p class="text-slate-600 text-sm whitespace-pre-line leading-relaxed">{{
+                                    obs.observacion }}</p>
                             </div>
                         </div>
-                        <p *ngIf="integrantes().length === 0" class="text-sm text-slate-400 text-center py-2">Sin
-                            integrantes adicionales</p>
+                        <div *ngIf="observaciones().length === 0" class="text-center py-8">
+                            <p class="text-slate-400 text-sm italic">No hay actividad registrada en la bitácora.</p>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
+
     </div>
 </div>
 
-<div *ngIf="showIntegrantesModal()" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
 
+<div *ngIf="showIntegrantesModal()" class="relative z-50">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
     <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="flex min-h-full items-center justify-center p-4">
             <div
-                class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                    <h3 class="text-base font-semibold leading-6 text-slate-900 mb-4" id="modal-title">Agregar miembro
-                        de soporte</h3>
+                class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-md">
 
-                    <div class="mt-2 max-h-60 overflow-y-auto space-y-2">
-                        <button *ngFor="let s of soportesDisponibles()" (click)="agregarIntegrante(s.usuario_id)"
-                            class="w-full group flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-all text-left">
-                            <div
-                                class="h-10 w-10 flex-shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-indigo-600 font-bold">
-                                {{ s.nombre_completo.charAt(0) }}
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-slate-900 group-hover:text-indigo-700">{{
-                                    s.nombre_completo }}</p>
-                                <p class="text-xs text-slate-500 group-hover:text-indigo-500">{{ s.correo }}</p>
-                            </div>
-                            <div
-                                class="ml-auto text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium">
-                                Seleccionar
-                            </div>
-                        </button>
-                    </div>
+                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-sm font-bold text-slate-900">Agregar Colaborador</h3>
+                    <button (click)="showIntegrantesModal.set(false)" class="text-slate-400 hover:text-slate-600">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <button type="button" (click)="showIntegrantesModal.set(false)"
-                        class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Cancelar</button>
+
+                <div class="p-4 max-h-[400px] overflow-y-auto custom-scrollbar space-y-2">
+                    <button *ngFor="let s of soportesDisponibles()" (click)="agregarIntegrante(s.usuario_id)"
+                        class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all text-left group">
+                        <div
+                            class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center group-hover:bg-[#002777] group-hover:text-white transition-colors">
+                            {{ s.nombre_completo.charAt(0) }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700">{{ s.nombre_completo }}</p>
+                            <p class="text-xs text-slate-400">{{ s.correo }}</p>
+                        </div>
+                    </button>
+
+                    <div *ngIf="soportesDisponibles().length === 0" class="text-center py-8 text-slate-400 text-sm">
+                        No hay más técnicos disponibles.
+                    </div>
                 </div>
             </div>
         </div>
